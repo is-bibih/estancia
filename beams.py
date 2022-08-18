@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import j0
 
 def plane(k, x, y, z):
     """Generate plane wave with wave vector k.
@@ -36,5 +37,21 @@ def gaussian(x, y, z, w0, lamb):
         * np.exp(-(x**2 + y**2) / w(z)**2) \
         * np.exp(-1j*(k*z + k*(x**2+y**2)/(2*R(z)) - psi(z))) \
         * np.exp(1j*k*z)
+    return E
+
+
+def bessel(x, y, z, a, b):
+    """Generate gaussian beam.
+
+    :x: array of x values
+    :y: array of y values
+    :z: plane to evaluate field on
+    :a: width parameter
+    :b: kz component
+    :returns: complex amplitude of the wave
+
+    """
+    # wave number (propagating along z)
+    E = np.exp(1j * b*z) * j0(a * np.sqrt(x**2 + y**2))
     return E
 

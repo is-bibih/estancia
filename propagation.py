@@ -27,11 +27,11 @@ def beam_propagation_method(E0, x, y, zf, lamb):
     # check not evanescent region (frequency space)
     valid_region = a**2 + b**2 <= 1
     # angular spectrum at origin
-    A0 = fft2(E0)
+    A0 = fft2(E0, axes=(0, 1))
     # angular spectrum at final plane
     Af = A0 * np.exp(1j * 2*np.pi/lamb \
                      * np.sqrt(1 - a**2 - b**2) * zf)
     # complex frequency at final plane
-    Ef = ifft2(Af * valid_region)
+    Ef = ifft2(Af * valid_region, axes=(0, 1))
     return Ef
 
