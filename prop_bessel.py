@@ -3,8 +3,8 @@ import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.animation import FuncAnimation
 
-from beams import bessel, plane, gaussian
-from propagation import beam_propagation_method
+from functions.beams import bessel, plane, gaussian
+from functions.propagation import beam_propagation_method
 
 # -----------------
 # window parameters
@@ -21,7 +21,7 @@ nz = 2**6
 # -------------------
 
 lamb = 633e-9
-r_aperture = (xf - x0)/4
+r_aperture = (xf - x0)*0.25
 #r_aperture = 0.001
 beta = 2*np.pi / lamb
 alpha = 0.9 * 2*np.pi / r_aperture

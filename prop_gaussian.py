@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from beams import plane, gaussian
-from propagation import beam_propagation_method
+from functions.beams import plane, gaussian
+from functions.propagation import beam_propagation_method
 
 # -----------------
 # window parameters
@@ -57,8 +57,8 @@ imshow_kwargs = {
     'extent': [x0, xf, y0, yf],
 }
 
-E = E0g
-Ef = Efg
+E = E0p
+Ef = Efp
 
 ax = plt.subplot(2, 1, 1)
 im = plt.imshow(np.abs(E)**2, **imshow_kwargs)
