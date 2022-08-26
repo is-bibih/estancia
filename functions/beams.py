@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special import j0
+from scipy.special import j0, hankel1, hankel2, gamma
 
 def plane(k, x, y, z):
     """Generate plane wave with wave vector k.
@@ -54,4 +54,45 @@ def bessel(x, y, z, a, b):
     # wave number (propagating along z)
     E = np.exp(1j * b*z) * j0(a * np.sqrt(x**2 + y**2))
     return E
+
+def hankel(x, y, z, kr, kz, m=0, kind=1):
+    """Generate Hankel waves.
+
+    :x: array of x values
+    :y: array of y values
+    :z: plane to evaluate field on
+    :kr: radial component of wave vector
+    :kz: z component of wave vector
+    :m: order of hankel functions
+    :kind: 1 produces outgoing waves, 2 produces incoming waves, and 3 produces both
+    :returns: complex amplitude of the wave
+    """
+    r = np.sqrt(x**2 + y**2)
+    r[r == 0] = 1e-20 # to avoid divergence at origin
+    phi = np.arctan2(y, x)
+
+    E = np.exp(1j*(kz*z + m*phi))
+    if kind==1:
+        E = E*hankel1(m, kr*r)
+    elif kind==2:
+        E = E*hankel2(m, kr*r)
+    elif kind==3:
+        E = E * (hankel1(m, kr*r) + hankel2(m, kr*r)) / 2
+
+    return E
+
+def hermite_gauss(x, y, z, w0, z0, lamb, m=0, n=0):
+    """Generate Hermite-Gaussian beams.
+
+    :x: array of x values
+    :y: array of y values
+    :z: plane to evaluate field on
+    :w0: beam waist
+    :z0: Rayleigh range
+    :lamb: wavelength
+    :m: order of x-dependent hermite function
+    :n: order of y-dependent hermite function
+    :returns: complex amplitude of the wave
+    """
+    pass
 
