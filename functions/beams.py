@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.special import j0, hankel1, hankel2, gamma
+from scipy.special import j0, hankel1, hankel2, gamma, factorial
+from scipy.special import eval_hermite as herm
 
 def plane(k, x, y, z):
     """Generate plane wave with wave vector k.
@@ -22,7 +23,6 @@ def gaussian(x, y, z, w0, lamb):
     :y: array of y values
     :z: plane to evaluate field on
     :w0: beam waist
-    :z0: Rayleigh range
     :lamb: wavelength
     :returns: complex amplitude of the wave
 
@@ -81,18 +81,32 @@ def hankel(x, y, z, kr, kz, m=0, kind=1):
 
     return E
 
-def hermite_gauss(x, y, z, w0, z0, lamb, m=0, n=0):
+def hermite_gauss(x, y, z, w0, lamb, m=0, n=0, norm=True):
     """Generate Hermite-Gaussian beams.
 
     :x: array of x values
     :y: array of y values
     :z: plane to evaluate field on
     :w0: beam waist
-    :z0: Rayleigh range
     :lamb: wavelength
     :m: order of x-dependent hermite function
     :n: order of y-dependent hermite function
+    :norm: True for normalized HG functions, False for unnormalized
     :returns: complex amplitude of the wave
     """
-    pass
+    # rayleigh range
+    z0 = np.pi*w0**2/lamb
+    # gaussian field
+    u = gaussian(x, y, z, w0, lamb)
+    # waist
+    w = w0 * np.sqrt(1 + (z/z0)**2)
+    # phase
+    phi = (m+n) * np.arctan(z/z0)
+    # normalization
+    scale = np.sqrt(2/np.pi) * 2**(-(m+n)/2) \
+        / np.sqrt(factorial(n) * factorial(m) * w**2) \
+        if norm else 1
+    # field
+    E = scale * herm(m, np.sqrt(2)*x/w) * herm(n, np.sqrt(2)*y/w) * u * np.exp(1j * phi)
+    return E
 
