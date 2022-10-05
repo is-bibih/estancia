@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from functions.beams import plane, gaussian
-from functions.propagation import beam_propagation_method
+from ..functions.beams import plane, gaussian
+from ..functions.propagation import beam_propagation_method
 
 # -----------------
 # window parameters

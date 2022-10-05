@@ -33,3 +33,17 @@ def pb2cart(xi, eta, phi):
     z = -xi + eta
     return x, y, z
 
+def cart2pb(x, y, z):
+    """Transform cartesian coordinates to circular paraboloidal.
+
+    :x: cartesian coordinate x
+    :y: cartesian coordinate y
+    :z: cartesian coordinate z
+    :returns: (xi, eta, phi) coordinates corresponding to (x, y, z)
+
+    """
+    phi = np.arctan2(y, x)
+    xi = - np.sqrt(np.sqrt(x**2 + y**2 + z**2) - z)
+    eta = x / (xi * np.cos(phi))
+    return xi, eta, phi
+

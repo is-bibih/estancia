@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.special import eval_genlaguerre as L, jv, yv, factorial, poch, gamma
 #from scipy.special import hyp1f1 as M
 #from mpmath import hyp1f1 as M
-from hypgeo_functions import M, U
+from ..functions.hypergeometric import M, U
 
 which_function = 'bessel'
 

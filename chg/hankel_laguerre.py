@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from hypgeo_functions import X, L
+from ..functions.hypergeometric import X, L
 from scipy.special import factorial
 import time
 
@@ -15,12 +15,12 @@ yl = L(n, m, x)
 
 # truncated sum
 start_badsums = time.time()
-yx, Cmn = X(m, n, x, method='bad sums')
+yx, Cmn = X(m, n, x, method='bad sums', return_C=True)
 end_badsums = time.time()
 
 # converging sum
 start_sums = time.time()
-yx, Cmn = X(m, n, x, method='sums')
+yx, Cmn = X(m, n, x, method='sums', return_C=True)
 end_sums = time.time()
 
 N = n + (m+1)/2
@@ -43,7 +43,7 @@ ax.plot(x, yl, label='laguerre 1')
 ax.plot(x, yx, label='laguerre 2')
 ax.plot(x, y_both, label='envelope')
 ax.legend()
-#plt.show()
+plt.show()
 
 print(end_sums - start_sums)
 print(end_badsums - start_badsums)

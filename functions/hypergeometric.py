@@ -2,7 +2,7 @@ import mpmath as mp
 import numpy as np
 from scipy.special import factorial, gamma
 from scipy.misc import derivative
-from math_functions import converge_sum, integer_stream
+from .summation import converge_sum, integer_stream
 
 def mp_wrapper(mp_func, x, *args, **kwargs):
     """Wrap an mp function for numpy arrays.
@@ -65,13 +65,14 @@ def U(a, b, z):
     y = np.array(y).reshape(sh)
     return y
 
-def X(m, n, x, method='sums'):
+def X(m, n, x, method='sums', return_C=False):
     """Compute Laguerre's function of the second kind.
 
     :m: first parameter
     :n: second parameter
     :x: real argument
-    :returns: X_n^m(x)
+    :return_C_: whether the coefficients should be returned
+    :returns: X_n^m(x) or X_n^m(x), Cmn if return_C
 
     """
     # constant
@@ -142,5 +143,62 @@ def X(m, n, x, method='sums'):
     else:
         raise ValueError('invalid method name')
 
-    return y, Cmn
+    if return_C:
+        return y, Cmn
+    else:
+        return y
+
+def P(n, m, z):
+    """Evaluate Pinney's function.
+
+    :n: first parameter for laguerre function
+    :m: second parameter for laguerre function
+    :z: argument for Pinney's function
+    :returns: U_n^m(z)
+
+    """
+    # sign according to z's angle
+    change_sign = np.sign(np.angle(z))
+
+    # main coefficient
+    coef = -change_sign * 1j * np.sin(np.pi*n) \
+        * gamma(n+m+1) / (np.pi * np.sin(np.pi*m))
+
+    # functions to evaluate for each term
+    term1_func = lambda p: gamma(p-n) * z**p \
+        / (gamma(p+m+1) * factorial(p))
+    term2_func = lambda p: gamma(p-m-n) * z**p \
+        / (gamma(p-m+1) * factorial(p))
+
+    # make indices for sums
+    term2_k = integer_stream(0, np.infty, shape=[-1, 1])
+    term2_k = integer_stream(0, np.infty, shape=[-1, 1])
+
+    # evaluate terms
+    term1 = np.exp(change_sign * 1j * np.pi * m) \
+        * converge_sum(term2_func, term2_k, keepdims=True)
+    term2 = - np.sin(np.pi * (n+m)) / np.sin(np.pi*n) * z**(-m) \
+        * converge_sum(term2_func, term2_k, keepdims=True)
+
+    # put everything together
+    y = coef * (term1 + term2)
+
+    return y
+
+def pinney_wave(n, m, z, kind='S'):
+    """Evaluate Pinney's S and V functions
+
+    :n: parameter n of function
+    :m: parameter m of function
+    :z: argument of function
+    :kind: may be either S or V
+    :returns: either S_n^m(z) or V_n^m(z), according to kind
+
+    """
+    if kind == 'S':
+        return z**(0.5*m) * np.exp(-0.5*z) * L(n, m, z)
+    elif kind == 'V':
+        return z**(0.5*m) * np.exp(-0.5*z) * P(n, m, z)
+    else:
+        raise ValueError('invalid kind for Pinney wave function')
 

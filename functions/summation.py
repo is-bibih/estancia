@@ -41,6 +41,13 @@ def converge_sum(f, x_stream, eps=1e-5, axis=0, max_iter=1e5, **kwargs):
             # stop if norm of contribution is small or invalid
             contrib = np.abs(diff.sum())
             if np.isnan(contrib) or (contrib <= eps) or (i > max_iter):
+                if np.isnan(contrib):
+                    print('isnan')
+                    print(i)
+                elif contrib <= eps:
+                    print('small')
+                else:
+                    print('many i')
                 return total
             else:
                 total += diff

@@ -3,8 +3,8 @@ import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.animation import FuncAnimation
 
-from functions.beams import bessel, hankel
-from functions.propagation import beam_propagation_method
+from ..functions.beams import bessel, hankel
+from ..functions.propagation import beam_propagation_method
 
 # -----------------
 # window parameters

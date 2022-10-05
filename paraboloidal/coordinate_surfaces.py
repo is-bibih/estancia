@@ -1,6 +1,6 @@
 from mayavi import mlab
 import numpy as np
-from paraboloidal_functions import gen_pb2cart
+from ..functions.paraboloidal import gen_pb2cart
 
 # ETS_TOOLKIT=wx
 

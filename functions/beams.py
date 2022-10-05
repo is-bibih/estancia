@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.special import j0, hankel1, hankel2, gamma, factorial
 from scipy.special import eval_hermite as herm
+from ..functions.hypergeometric import pinney_wave
+from ..functions.paraboloidal import cart2pb
 
 def plane(k, x, y, z):
     """Generate plane wave with wave vector k.
@@ -109,4 +111,22 @@ def hermite_gauss(x, y, z, w0, lamb, m=0, n=0, norm=True):
     # field
     E = scale * herm(m, np.sqrt(2)*x/w) * herm(n, np.sqrt(2)*y/w) * u * np.exp(1j * phi)
     return E
+
+def paraboloidal(x, y, z, lamb, m=0, n=0):
+    """Generate circular paraboloidal beams.
+
+    :x: array of x values
+    :y: array of y values
+    :z: plane to evaluate field on
+    :lamb: wavelength
+    :m: superindex order of laguerre functions
+    :n: subindex order of laguerre functions
+    :returns: complex amplitude of the wave
+    """
+    xi, eta, phi = cart2pb(x, y, z)
+    E = pinney_wave(n, m, xi, kind='S') \
+        * pinney_wave(n, m, eta) \
+        * np.exp(1j * m * phi)
+    return E
+
 
