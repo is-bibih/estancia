@@ -148,40 +148,61 @@ def X(m, n, x, method='sums', return_C=False):
     else:
         return y
 
-def P(n, m, z):
+def P(m, n, z):
     """Evaluate Pinney's function.
 
-    :n: first parameter for laguerre function
-    :m: second parameter for laguerre function
+    :m: first parameter for laguerre function
+    :n: second parameter for laguerre function
     :z: argument for Pinney's function
     :returns: U_n^m(z)
 
     """
-    # sign according to z's angle
-    change_sign = np.sign(np.angle(z))
 
-    # main coefficient
-    coef = -change_sign * 1j * np.sin(np.pi*n) \
-        * gamma(n+m+1) / (np.pi * np.sin(np.pi*m))
+    # only for real argument
+    y = -L(n, m, z) + 1j * (-1)**(n+1) \
+        / (factorial(n)*factorial(m)) * X(m, n, z)
 
-    # functions to evaluate for each term
-    term1_func = lambda p: gamma(p-n) * z**p \
-        / (gamma(p+m+1) * factorial(p))
-    term2_func = lambda p: gamma(p-m-n) * z**p \
-        / (gamma(p-m+1) * factorial(p))
+    if False:
+        # sign according to z's angle
+        change_sign = np.sign(np.angle(z))
 
-    # make indices for sums
-    term2_k = integer_stream(0, np.infty, shape=[-1, 1])
-    term2_k = integer_stream(0, np.infty, shape=[-1, 1])
+        # non-integer m case
+        if not float(m).is_integer():
+            y = change_sign * 1j / np.sin(np.pi*m) \
+                * ( np.exp(-change_sign * 1j * np.pi * m) * L(n, m, z) \
+                   - gamma(m + n + 1)/gamma(n+1) \
+                   * z**(-m) * L(m+n, -m, z))
 
-    # evaluate terms
-    term1 = np.exp(change_sign * 1j * np.pi * m) \
-        * converge_sum(term2_func, term2_k, keepdims=True)
-    term2 = - np.sin(np.pi * (n+m)) / np.sin(np.pi*n) * z**(-m) \
-        * converge_sum(term2_func, term2_k, keepdims=True)
+        # integer m
+        elif not float(n).is_integer():
 
-    # put everything together
-    y = coef * (term1 + term2)
+            # first summation term
+
+            sum1_p = np.arange(1, m+1).reshape([-1, 1])
+            sum1_func = lambda p: gamma(-p-n) * factorial(p-1) \
+                * (-z)**(p-m) / factorial(m-p)
+            sum1 = sum1_func(sum1_p).sum(axis=0, keepdims=True)
+
+            # second summation term
+
+            sum2_p = integer_stream(0, np.infty, shape=[-1, 1])
+            # sums 1/k up to p
+            #smaller_sum_func = lambda p: \
+            #    (np.ones((1, int(p)))/np.arange(1, p+1)).sum(dtype=float)
+            harmonic = lambda p: digamma(p+1) - np.euler_gamma
+            sum2_func = lambda p: gamma(p-n) / factorial(p+m) \
+                * (np.log(z) * 2*np.euler_gamma - change_sign*np.pi*1j \
+                   #- smaller_sum_func(p) - smaller_sum_func(p+m) \
+                   - harmonic(p) - harmonic(p+m) \
+                   + digamma(p-n) - np.pi / np.tan(np.pi*n)) \
+                * z**(p) / factorial(p)
+            sum2 = converge_sum(sum2_func, sum2_p, keepdims=True)
+
+            # put everything together
+
+            y = change_sign * 1j * np.sin(np.pi*n)/(np.pi**2) \
+                * gamma(m+n+1)* sum1 - change_sign * 1j \
+                * np.sin(np.pi*n)/(np.pi**2) * gamma(m+n+1) * sum2
 
     return y
 

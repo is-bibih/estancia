@@ -1,5 +1,6 @@
 from copy import Error
 import numpy as np
+import mpmath as mp
 
 def integer_stream(x0, xf, block_size=100, shape=[-1]):
     """Produce an iterator of integer arrays.
@@ -39,19 +40,14 @@ def converge_sum(f, x_stream, eps=1e-5, axis=0, max_iter=1e5, **kwargs):
         try:
             diff = np.sum(f(x_block), axis=axis, **kwargs)
             # stop if norm of contribution is small or invalid
-            contrib = np.abs(diff.sum())
+            contrib = float(mp.mpf(np.real(np.abs(diff.sum()))))
             if np.isnan(contrib) or (contrib <= eps) or (i > max_iter):
-                if np.isnan(contrib):
-                    print('isnan')
-                    print(i)
-                elif contrib <= eps:
-                    print('small')
-                else:
-                    print('many i')
                 return total
             else:
                 total += diff
             x_block = next(x_stream, None)
+        except TypeError as e:
+            print(type(contrib))
         except Error as e:
             return total
 
