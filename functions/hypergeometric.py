@@ -1,8 +1,10 @@
 import mpmath as mp
 import numpy as np
-from scipy.special import factorial, gamma
+from scipy.special import factorial, gamma, binom, hankel1, hankel2
 from scipy.misc import derivative
+from scipy.integrate import quad_vec
 from .summation import converge_sum, integer_stream
+from .integration import mc_integrate
 
 def mp_wrapper(mp_func, x, *args, **kwargs):
     """Wrap an mp function for numpy arrays.
@@ -25,6 +27,16 @@ def digamma(x):
     :returns: Psi(x)
     """
     return mp_wrapper(mp.digamma, x)
+
+def besselj(n, x):
+    """Wrap mpmath's besselj for numpy arrays.
+
+    :n: order
+    :x: ndarray argument
+    :returns: J_n(x)
+
+    """
+    return mp_wrapper(mp.besselj, x, n)
 
 def L(n, a, z):
     """Wrap mpmath's laguerre for numpy arrays.
@@ -65,13 +77,34 @@ def U(a, b, z):
     y = np.array(y).reshape(sh)
     return y
 
-def X(m, n, x, method='sums', return_C=False):
+def H1(m, z):
+    """Wrap mpmath's hankel1 for numpy arrays.
+
+    :m: order for the Hankel function
+    :z: ndarray argument
+    :returns:
+
+    """
+    return mp_wrapper(mp.hankel1, z, m).astype(complex)
+
+def H2(m, z):
+    """Wrap mpmath's hankel2 for numpy arrays.
+
+    :m: order for the Hankel function
+    :z: ndarray argument
+    :returns:
+
+    """
+    return mp_wrapper(mp.hankel2, z, m).astype(complex)
+
+def X(m, n, x, method='sums', return_C=False, no_factorials=False):
     """Compute Laguerre's function of the second kind.
 
     :m: first parameter
     :n: second parameter
     :x: real argument
     :return_C_: whether the coefficients should be returned
+    :no_factorials: whether leading factorial coefficient should be calculated; True for use in calculating Pinney's function
     :returns: X_n^m(x) or X_n^m(x), Cmn if return_C
 
     """
@@ -121,10 +154,13 @@ def X(m, n, x, method='sums', return_C=False):
         term2 = (-1)**(n+1) * converge_sum(term2_func, term2_k, keepdims=True)
 
         # add them
-        y = Cmn * (-1)**n * factorial(n) * factorial(m) \
-            * factorial(n+m) / np.pi * (term1 + term2 + term3)
+        if no_factorials:
+            y = factorial(n+m) / np.pi * (term1 + term2 + term3)
+        else:
+            y = Cmn * (-1)**n * factorial(n) * factorial(m) \
+                * factorial(n+m) / np.pi * (term1 + term2 + term3)
 
-    elif 'bad sums':
+    elif method == 'bad sums':
 
         # indices for each term
         term1_k = np.arange(1, m+1).reshape([-1, 1])
@@ -141,68 +177,146 @@ def X(m, n, x, method='sums', return_C=False):
             * factorial(n+m) / np.pi * (term1 + term2 + term3)
 
     else:
-        raise ValueError('invalid method name')
+        raise ValueError('invalid method name for calculation of X')
 
     if return_C:
         return y, Cmn
     else:
         return y
 
-def P(m, n, z):
+def P(m, n, z, method='known_functions', n_integrate=1e4):
     """Evaluate Pinney's function.
 
     :m: first parameter for laguerre function
     :n: second parameter for laguerre function
     :z: argument for Pinney's function
+    :method: can be 'known_functions', 'sums', or 'integrals'
+    :n_integrate: amount of points to use in case of numeric integration
     :returns: U_n^m(z)
 
     """
 
-    # only for real argument
-    y = -L(n, m, z) + 1j * (-1)**(n+1) \
-        / (factorial(n)*factorial(m)) * X(m, n, z)
+    if method == 'known_functions':
 
-    if False:
+        y = -np.real(L(n, m, z)) + 1j * X(m, n, z, no_factorials=True)
+
+    elif method == 'sums' or method == 'mpsums':
+
         # sign according to z's angle
-        change_sign = np.sign(np.angle(z))
+        change_sign = np.ones(z.shape)
+        change_sign[np.imag(z) < 0] = -1
 
-        # non-integer m case
-        if not float(m).is_integer():
-            y = change_sign * 1j / np.sin(np.pi*m) \
-                * ( np.exp(-change_sign * 1j * np.pi * m) * L(n, m, z) \
-                   - gamma(m + n + 1)/gamma(n+1) \
-                   * z**(-m) * L(m+n, -m, z))
+        # useful for summations
+        harmonic = lambda p: digamma(p+1) - np.euler_gamma
 
-        # integer m
-        elif not float(n).is_integer():
+        # functions for each sum
 
-            # first summation term
+        sum1_func = lambda p: factorial(m+n) * factorial(p-1) \
+            / (factorial(p+n) * factorial(m-p)) * z**(-p)
+        sum2_func = lambda p: binom(n, p) \
+            * (np.log(z) + np.euler_gamma - change_sign * np.pi * 1j \
+               + harmonic(n-p) - harmonic(p) - harmonic(p+m)) \
+            * (-z)**p / factorial(p+m)
+        sum3_func = lambda p: factorial(p-n-1) * z**p \
+            / (factorial(p+m) * factorial(p))
+
+        if method == 'sums':
+            # indices for each sum
 
             sum1_p = np.arange(1, m+1).reshape([-1, 1])
-            sum1_func = lambda p: gamma(-p-n) * factorial(p-1) \
-                * (-z)**(p-m) / factorial(m-p)
+            sum2_p = np.arange(0, n+1).reshape([-1, 1])
+            sum3_p = integer_stream(n+1, np.infty, shape=[-1, 1])
+
+            # evaluate each sum
+
             sum1 = sum1_func(sum1_p).sum(axis=0, keepdims=True)
+            sum2 = sum2_func(sum2_p).sum(axis=0, keepdims=True)
+            sum3 = converge_sum(sum3_func, sum3_p, keepdims=True)
 
-            # second summation term
+        else:
 
-            sum2_p = integer_stream(0, np.infty, shape=[-1, 1])
-            # sums 1/k up to p
-            #smaller_sum_func = lambda p: \
-            #    (np.ones((1, int(p)))/np.arange(1, p+1)).sum(dtype=float)
-            harmonic = lambda p: digamma(p+1) - np.euler_gamma
-            sum2_func = lambda p: gamma(p-n) / factorial(p+m) \
-                * (np.log(z) * 2*np.euler_gamma - change_sign*np.pi*1j \
-                   #- smaller_sum_func(p) - smaller_sum_func(p+m) \
-                   - harmonic(p) - harmonic(p+m) \
-                   + digamma(p-n) - np.pi / np.tan(np.pi*n)) \
-                * z**(p) / factorial(p)
-            sum2 = converge_sum(sum2_func, sum2_p, keepdims=True)
+            sum1 = mp.nsum(sum1_func, [1, m])
+            sum2 = mp.nsum(sum2_func, [0, n])
+            sum3 = mp.nsum(sum3_func, [n+1, mp.inf])
 
-            # put everything together
+        # put everything together
 
-            y = change_sign * 1j * np.sin(np.pi*n)/(np.pi**2) \
-                * gamma(m+n+1)* sum1 - change_sign * 1j \
-                * np.sin(np.pi*n)/(np.pi**2) * gamma(m+n+1) * sum2
+        y = - 1j / np.pi * change_sign * (- sum1 \
+             + factorial(m+n)/factorial(n) * sum2 \
+             + (-1)**n * factorial(n+m) * sum3)
+
+    elif method == 'integrals':
+
+        # reshape z so integrals don't try to broadcast
+        sh = z.shape
+        z = np.reshape(z, (1, -1))
+
+        # find where to use each integral
+        pos_imag = np.imag(z) >= 0
+        not_pos_imag = np.logical_not(pos_imag)
+
+        # define functions for integral
+
+        # for Im(z) > 0
+        #integral_func_1 = lambda t: np.exp(-t) \
+        #    * t ** (0.5*m + n) \
+        #    * H1(m, 2 * np.sqrt(z[pos_imag]*t))
+        #integral_func_1_tau = lambda tau: np.exp(-1/tau) \
+        #    * tau**(-m/2 - n - 2) \
+        #    * H1(m, 2*np.sqrt(z[pos_imag]/tau))
+        integral_func_1 = lambda t: np.exp(-t) \
+            * t ** (0.5*m + n) \
+            * H1(m, 2 * np.sqrt(z[pos_imag]*t)) \
+            + np.exp(-1/t) \
+            * t**(-0.5*m - n - 2) \
+            * H1(m, 2*np.sqrt(z[pos_imag]/t))
+
+        # for Im(z)  < 0
+        #integral_func_2 = lambda t: np.exp(-t) \
+        #    * t ** (0.5*m + n) \
+        #    * H2(m, 2 * np.sqrt(z[not_pos_imag]*t))
+        #integral_func_2_tau = lambda tau: np.exp(-1/tau) \
+        #    * tau**(-m/2 - n - 2) \
+        #    * H2(m, 2*np.sqrt(z[not_pos_imag]/tau))
+        integral_func_2 = lambda t: np.exp(-t) \
+            * t ** (0.5*m + n) \
+            * H2(m, 2 * np.sqrt(z[not_pos_imag]*t)) \
+            + np.exp(-1/t) \
+            * t**(-0.5*m - n - 2) \
+            * H2(m, 2*np.sqrt(z[not_pos_imag]/t))
+
+        # leading coefficient for y
+        y = (z**(m/2) * np.exp(z) / gamma(n+1)).astype(complex)
+
+        # evaluate each integral
+        #y[pos_imag] *= mc_integrate(0, 1, integral_func_1, n=n_integrate)
+        #y[not_pos_imag] *= mc_integrate(0, 1, integral_func_2, n=n_integrate)
+        y[pos_imag] *= quad_vec(integral_func_1, 1e-4, 1)[0]
+        y[not_pos_imag] *= quad_vec(integral_func_2, 1e-4, 1)[0]
+
+    elif method == 'recursive':
+
+        # sign change
+        ch_sign = np.sign(z)
+        ch_sign[ch_sign != -1] = 1
+
+        # function to get P recursively
+        y_func = lambda p: 1/ L(n-1, m, z) \
+                * ( 1j / np.pi * gamma(m+n)/gamma(n) \
+                    * z**(-m) * np.exp(z) \
+                   + p * L(n, m, z))
+        if (n > 2) and np.all(np.real(z) > -1):
+            p = P(m, n-1, z, method='recursive')
+            y = y_func(p).astype(complex)
+            y[np.isnan(y)] = 0
+        elif (n > 2) and not np.all(np.real(z) <= -1):
+            raise ValueError('argument must have real part greater than -1')
+        else:
+            p = P(m, n-1, z, method='sums')
+            y = y_func(p)
+
+    else:
+        raise ValueError('invalid method for calculation of Pinney function')
 
     return y
 

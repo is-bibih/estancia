@@ -17,7 +17,7 @@ def integer_stream(x0, xf, block_size=100, shape=[-1]):
         yield x
         x += block_size
 
-def converge_sum(f, x_stream, eps=1e-5, axis=0, max_iter=1e5, **kwargs):
+def converge_sum(f, x_stream, eps=1e-5, axis=0, max_iter=1e4, block_size=100, **kwargs):
     """Do a summation until it converges or max iterations are reached.
 
     :f: function to sum
@@ -35,12 +35,16 @@ def converge_sum(f, x_stream, eps=1e-5, axis=0, max_iter=1e5, **kwargs):
     # add terms for each block of x values
     x_block = next(x_stream, None)
     while (x_block is not None):
-        i += 1
+        i += x_block.size
         # contribution from current block
         try:
             diff = np.sum(f(x_block), axis=axis, **kwargs)
             # stop if norm of contribution is small or invalid
             contrib = float(mp.mpf(np.real(np.abs(diff.sum()))))
+            #if np.isnan(contrib) and (i < max_iter):
+            #    pass
+            #elif (contrib <= eps) or (i > max_iter):
+            #    return total
             if np.isnan(contrib) or (contrib <= eps) or (i > max_iter):
                 return total
             else:
