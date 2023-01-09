@@ -28,8 +28,8 @@ def pb2cart(xi, eta, phi):
     :returns: (x, y, z) coordinates corresponding to (xi, eta, phi)
 
     """
-    x = xi * eta * np.cos(phi)
-    y = xi * eta * np.sin(phi)
+    x = 2 * np.sqrt(xi * eta) * np.cos(phi)
+    y = 2 * np.sqrt(xi * eta) * np.sin(phi)
     z = -xi + eta
     return x, y, z
 
@@ -44,6 +44,6 @@ def cart2pb(x, y, z):
     """
     phi = np.arctan2(y, x)
     xi = - np.sqrt(np.sqrt(x**2 + y**2 + z**2) - z)
-    eta = x / (xi * np.cos(phi))
+    eta = z + xi
     return xi, eta, phi
 
