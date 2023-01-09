@@ -18,6 +18,9 @@ def mp_wrapper(mp_func, x, *args, **kwargs):
     sh = x.shape
     y = [mp_func(*args, xi) for xi in x.flatten()]
     y = np.array(y).reshape(sh)
+    y = y.astype(complex)
+    if not np.any(np.iscomplex(y)):
+        y = y.astype(float)
     return y
 
 def digamma(x):
@@ -108,6 +111,9 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
     :returns: X_n^m(x) or X_n^m(x), Cmn if return_C
 
     """
+
+    sh = x.shape
+
     # constant
     N = n + (m+1)/2
     # calculate coefficient
@@ -143,14 +149,18 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
 
         # evaluate first and last term
 
-        term1_k = np.arange(1, m+1).reshape([-1, 1])
-        term3_k = np.arange(0, n+1).reshape([-1, 1])
+        x_dims = x.ndim
+        k_dims = [-1] + [1 for i in range(x_dims)]
+        x = np.expand_dims(x, axis=0)
+
+        term1_k = np.arange(1, m+1).reshape(k_dims)
+        term3_k = np.arange(0, n+1).reshape(k_dims)
 
         term1 = term1_func(term1_k).sum(axis=0, keepdims=True)
         term3 = term3_func(term3_k).sum(axis=0, keepdims=True)
 
         # evaluate second term
-        term2_k = integer_stream(n+1, np.infty, shape=[-1, 1])
+        term2_k = integer_stream(n+1, np.infty, shape=k_dims)
         term2 = (-1)**(n+1) * converge_sum(term2_func, term2_k, keepdims=True)
 
         # add them
@@ -159,6 +169,8 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
         else:
             y = Cmn * (-1)**n * factorial(n) * factorial(m) \
                 * factorial(n+m) / np.pi * (term1 + term2 + term3)
+
+        y = np.squeeze(y)
 
     elif method == 'bad sums':
 
@@ -180,9 +192,9 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
         raise ValueError('invalid method name for calculation of X')
 
     if return_C:
-        return y, Cmn
+        return y.reshape(sh), Cmn
     else:
-        return y
+        return y.reshape(sh)
 
 def P(m, n, z, method='known_functions', n_integrate=1e4):
     """Evaluate Pinney's function.
@@ -196,9 +208,11 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
 
     """
 
+    sh = z.shape
+
     if method == 'known_functions':
 
-        y = -np.real(L(n, m, z)) + 1j * X(m, n, z, no_factorials=True)
+        y = -L(n, m, z) + 1j * X(m, n, z, no_factorials=True)
 
     elif method == 'sums' or method == 'mpsums':
 
@@ -318,7 +332,7 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
     else:
         raise ValueError('invalid method for calculation of Pinney function')
 
-    return y
+    return y.reshape(sh)
 
 def pinney_wave(n, m, z, kind='S'):
     """Evaluate Pinney's S and V functions
@@ -326,14 +340,16 @@ def pinney_wave(n, m, z, kind='S'):
     :n: parameter n of function
     :m: parameter m of function
     :z: argument of function
-    :kind: may be either S or V
-    :returns: either S_n^m(z) or V_n^m(z), according to kind
+    :kind: may be either S, V or W
+    :returns: either S_n^m(z), V_n^m(z), or W_n^m(z), according to kind
 
     """
     if kind == 'S':
         return z**(0.5*m) * np.exp(-0.5*z) * L(n, m, z)
     elif kind == 'V':
         return z**(0.5*m) * np.exp(-0.5*z) * P(n, m, z)
+    elif kind == 'W':
+        return z**(0.5*m) * np.exp(-0.5*z) * X(n, m, z)
     else:
         raise ValueError('invalid kind for Pinney wave function')
 
