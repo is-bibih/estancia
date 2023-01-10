@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.hypergeometric import P
+from ..functions.special import P
 
 m = 5
 n = np.arange(35, 36, 5)
@@ -10,7 +10,7 @@ r_start = 1
 r_end = 10
 
 r = np.linspace(r_start, r_end, num=200).reshape([1,-1])
-P_eval = [P(m, ni, r, method='sums').astype(complex) for ni in n]
+P_eval = [laguerreP(m, ni, r, method='sums').astype(complex) for ni in n]
 
 r = r.flatten()
 P_eval = [P_eval_i.flatten() for P_eval_i in P_eval]

@@ -3,14 +3,14 @@ import matplotlib.pylab as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.animation import FuncAnimation
 
-from ..functions.paraboloidal import cart2pb
-from ..functions.hypergeometric import pinney_wave
+from ..functions.paraboloidal_coordinates import cart2pb
+from ..functions.special import parabV
 from ..functions.propagation import beam_propagation_method
 
 num = 100
 
 n = 3
-m = 2
+m = 0
 
 # -----------------
 # window parameters
@@ -50,8 +50,8 @@ xi, eta, phi = cart2pb(x, y, z0)
 
 # initial fields
 
-e01 = pinney_wave(n, m, -1j*xi, kind='V')
-e02 = pinney_wave(n, m, 1j*eta, kind='V')
+e01 = parabV(n, m, -1j*xi)
+e02 = parabV(n, m, 1j*eta)
 e03 = np.exp(1j*m*phi)
 
 E0 = e01 * e02 * e03
@@ -70,8 +70,8 @@ imshow_kwargs = {
 }
 
 ax = plt.subplot(2, 1, 1)
-im = plt.imshow(np.abs(E0)**2, **imshow_kwargs)
-#im = plt.imshow(np.angle(A0), **imshow_kwargs)
+#im = plt.imshow(np.abs(E0)**2, **imshow_kwargs)
+im = plt.imshow(np.angle(E0), **imshow_kwargs)
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im, cax=cax)

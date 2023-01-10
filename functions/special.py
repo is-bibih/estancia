@@ -41,7 +41,7 @@ def besselj(n, x):
     """
     return mp_wrapper(mp.besselj, x, n)
 
-def L(n, a, z):
+def laguerreL(n, a, z):
     """Wrap mpmath's laguerre for numpy arrays.
 
     :n: first parameter for laguerre function
@@ -52,13 +52,13 @@ def L(n, a, z):
     """
     return mp_wrapper(mp.laguerre, z, n, a)
 
-def M(a, b, z):
+def hyperM(a, b, z):
     """Wrap mpmath's 1F1 for numpy arrays.
 
     :a: first parameter
     :b: second parameter
     :z: ndarray argument
-    :returns: M(a, b, z) as a ndarray
+    :returns: hyperM(a, b, z) as a ndarray
 
     """
     sh = z.shape
@@ -66,13 +66,13 @@ def M(a, b, z):
     y = np.array(y).reshape(sh)
     return y
 
-def U(a, b, z):
+def hyperU(a, b, z):
     """Wrap mpmath's hyperu for numpy arrays.
 
     :a: first parameter
     :b: second parameter
     :z: ndarray argument
-    :returns: U(a, b, z) as a ndarray
+    :returns: hyperU(a, b, z) as a ndarray
 
     """
     sh = z.shape
@@ -80,7 +80,7 @@ def U(a, b, z):
     y = np.array(y).reshape(sh)
     return y
 
-def H1(m, z):
+def hankel1(m, z):
     """Wrap mpmath's hankel1 for numpy arrays.
 
     :m: order for the Hankel function
@@ -90,7 +90,7 @@ def H1(m, z):
     """
     return mp_wrapper(mp.hankel1, z, m).astype(complex)
 
-def H2(m, z):
+def hankel2(m, z):
     """Wrap mpmath's hankel2 for numpy arrays.
 
     :m: order for the Hankel function
@@ -100,7 +100,7 @@ def H2(m, z):
     """
     return mp_wrapper(mp.hankel2, z, m).astype(complex)
 
-def X(m, n, x, method='sums', return_C=False, no_factorials=False):
+def laguerreX(m, n, x, method='sums', return_C=False, no_factorials=False):
     """Compute Laguerre's function of the second kind.
 
     :m: first parameter
@@ -132,17 +132,17 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
 
     if method == 'derivatives':
         # calculate first term
-        term1_func = lambda nu: gamma(nu+m+1) * M(-nu, m+1, x)
+        term1_func = lambda nu: gamma(nu+m+1) * hyperM(-nu, m+1, x)
         term1 = derivative(term1_func, n)
         # calculate second term
-        term2_func = lambda nu: U(-nu, m+1, x)
+        term2_func = lambda nu: hyperU(-nu, m+1, x)
         term2 = -factorial(m)/np.pi * derivative(term2_func, n)
         # sum
         y = Cmn * (-1)**n/np.pi * (term1 + term2)
 
     elif method == 'og':
-        y = Cmn * (gamma(n+m+1)*M(-n,m+1,x) \
-                   - factorial(m) * np.cos(n*np.pi) * U(-n,m+1,x)) \
+        y = Cmn * (gamma(n+m+1)*hyperM(-n,m+1,x) \
+                   - factorial(m) * np.cos(n*np.pi) * hyperU(-n,m+1,x)) \
             / np.sin(n*np.pi)
 
     elif method == 'sums':
@@ -196,7 +196,7 @@ def X(m, n, x, method='sums', return_C=False, no_factorials=False):
     else:
         return y.reshape(sh)
 
-def P(m, n, z, method='known_functions', n_integrate=1e4):
+def laguerreP(m, n, z, method='known_functions', n_integrate=1e4):
     """Evaluate Pinney's function.
 
     :m: first parameter for laguerre function
@@ -212,7 +212,7 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
 
     if method == 'known_functions':
 
-        y = -L(n, m, z) + 1j * X(m, n, z, no_factorials=True)
+        y = -laguerreL(n, m, z) + 1j * laguerreX(m, n, z, no_factorials=True)
 
     elif method == 'sums' or method == 'mpsums':
 
@@ -274,30 +274,30 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
         # for Im(z) > 0
         #integral_func_1 = lambda t: np.exp(-t) \
         #    * t ** (0.5*m + n) \
-        #    * H1(m, 2 * np.sqrt(z[pos_imag]*t))
+        #    * hankel1(m, 2 * np.sqrt(z[pos_imag]*t))
         #integral_func_1_tau = lambda tau: np.exp(-1/tau) \
         #    * tau**(-m/2 - n - 2) \
-        #    * H1(m, 2*np.sqrt(z[pos_imag]/tau))
+        #    * hankel1(m, 2*np.sqrt(z[pos_imag]/tau))
         integral_func_1 = lambda t: np.exp(-t) \
             * t ** (0.5*m + n) \
-            * H1(m, 2 * np.sqrt(z[pos_imag]*t)) \
+            * hankel1(m, 2 * np.sqrt(z[pos_imag]*t)) \
             + np.exp(-1/t) \
             * t**(-0.5*m - n - 2) \
-            * H1(m, 2*np.sqrt(z[pos_imag]/t))
+            * hankel1(m, 2*np.sqrt(z[pos_imag]/t))
 
         # for Im(z)  < 0
         #integral_func_2 = lambda t: np.exp(-t) \
         #    * t ** (0.5*m + n) \
-        #    * H2(m, 2 * np.sqrt(z[not_pos_imag]*t))
+        #    * hankel2(m, 2 * np.sqrt(z[not_pos_imag]*t))
         #integral_func_2_tau = lambda tau: np.exp(-1/tau) \
         #    * tau**(-m/2 - n - 2) \
-        #    * H2(m, 2*np.sqrt(z[not_pos_imag]/tau))
+        #    * hankel2(m, 2*np.sqrt(z[not_pos_imag]/tau))
         integral_func_2 = lambda t: np.exp(-t) \
             * t ** (0.5*m + n) \
-            * H2(m, 2 * np.sqrt(z[not_pos_imag]*t)) \
+            * hankel2(m, 2 * np.sqrt(z[not_pos_imag]*t)) \
             + np.exp(-1/t) \
             * t**(-0.5*m - n - 2) \
-            * H2(m, 2*np.sqrt(z[not_pos_imag]/t))
+            * hankel2(m, 2*np.sqrt(z[not_pos_imag]/t))
 
         # leading coefficient for y
         y = (z**(m/2) * np.exp(z) / gamma(n+1)).astype(complex)
@@ -315,18 +315,18 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
         ch_sign[ch_sign != -1] = 1
 
         # function to get P recursively
-        y_func = lambda p: 1/ L(n-1, m, z) \
+        y_func = lambda p: 1/ laguerreL(n-1, m, z) \
                 * ( 1j / np.pi * gamma(m+n)/gamma(n) \
                     * z**(-m) * np.exp(z) \
-                   + p * L(n, m, z))
+                   + p * laguerreL(n, m, z))
         if (n > 2) and np.all(np.real(z) > -1):
-            p = P(m, n-1, z, method='recursive')
+            p = laguerreP(m, n-1, z, method='recursive')
             y = y_func(p).astype(complex)
             y[np.isnan(y)] = 0
         elif (n > 2) and not np.all(np.real(z) <= -1):
             raise ValueError('argument must have real part greater than -1')
         else:
-            p = P(m, n-1, z, method='sums')
+            p = laguerreP(m, n-1, z, method='sums')
             y = y_func(p)
 
     else:
@@ -334,22 +334,36 @@ def P(m, n, z, method='known_functions', n_integrate=1e4):
 
     return y.reshape(sh)
 
-def pinney_wave(n, m, z, kind='S'):
-    """Evaluate Pinney's S and V functions
+def parabS(n, m, z):
+    """Evaluate paraboloidal S function.
 
     :n: parameter n of function
     :m: parameter m of function
     :z: argument of function
-    :kind: may be either S, V or W
-    :returns: either S_n^m(z), V_n^m(z), or W_n^m(z), according to kind
+    :returns: either V_n^m(z)
 
     """
-    if kind == 'S':
-        return z**(0.5*m) * np.exp(-0.5*z) * L(n, m, z)
-    elif kind == 'V':
-        return z**(0.5*m) * np.exp(-0.5*z) * P(n, m, z)
-    elif kind == 'W':
-        return z**(0.5*m) * np.exp(-0.5*z) * X(n, m, z)
-    else:
-        raise ValueError('invalid kind for Pinney wave function')
+    return z**(0.5*m) * np.exp(-0.5*z) * laguerreL(n, m, z)
+
+def parabV(n, m, z):
+    """Evaluate paraboloidal V function.
+
+    :n: parameter n of function
+    :m: parameter m of function
+    :z: argument of function
+    :returns: V_n^m(z)
+
+    """
+    return z**(0.5*m) * np.exp(-0.5*z) * laguerreP(n, m, z)
+
+def parabW(n, m, z):
+    """Evaluate paraboloidal W function.
+
+    :n: parameter n of function
+    :m: parameter m of function
+    :z: argument of function
+    :returns: either W_n^m(z)
+
+    """
+    return z**(0.5*m) * np.exp(-0.5*z) * laguerreX(n, m, z)
 

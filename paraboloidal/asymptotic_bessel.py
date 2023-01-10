@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.beams import pinney_wave
-from ..functions.hypergeometric import besselj, H1, H2
+from ..functions.beams import parabV, parabS, parabW
+from ..functions.special import besselj, H1, H2
 
 n = 4
 m = 2
@@ -16,13 +16,13 @@ s = np.linspace(0.2, 0.5, num=15)
 # expected asymptotic behavior
 
 bessel_asymp = besselj(m, 2*np.sqrt(n*x)).flatten()
-hankel_asymp = H2(m, 2*np.sqrt(n*x)).flatten()
+hankel_asymp = hankel2(m, 2*np.sqrt(n*x)).flatten()
 
 # function for each value of n
 
-S_asymp = [(si/n)**(0.5*m) * pinney_wave(n/si, m, si*x, kind='S') \
+S_asymp = [(si/n)**(0.5*m) * parabS(n/si, m, si*x, ) \
            .astype(complex).flatten() for si in s]
-V_asymp = [(si/n)**(0.5*m) * pinney_wave(n/si, m, si*x, kind='V') \
+V_asymp = [(si/n)**(0.5*m) * parabV(n/si, m, si*x, ) \
            .astype(complex).flatten() for si in s]
 x = x.flatten()
 

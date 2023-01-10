@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.special import eval_genlaguerre as L, jv, yv, factorial, poch, gamma
 #from scipy.special import hyp1f1 as M
 #from mpmath import hyp1f1 as M
-from ..functions.hypergeometric import M, U
+from ..functions.special import M, U
 
 which_function = 'bessel'
 
@@ -26,7 +26,7 @@ if which_function == 'laguerre':
     a = -n
     b = alpha+1
     coef = factorial(n) / poch(alpha + 1, n)
-    comp_fun = L(n, alpha, x)
+    comp_fun = laguerreL(n, alpha, x)
 
 elif which_function == 'bessel':
     legends = ['aproximación con HGC', 'Bessel']
@@ -59,7 +59,7 @@ elif which_function == 'chg':
     k = 0
     for i in range(a.size):
         for j in range(b.size):
-            y[:, k] = M(a[i], b[j], x)
+            y[:, k] = hyperM(a[i], b[j], x)
             legends[k] = f'$a = {a[i]}, b = {b[j]}$'
             k += 1
 
@@ -68,7 +68,7 @@ elif which_function == 'chg':
 # --------
 
 if which_function != 'chg':
-    y = M(a, b, x) / coef
+    y = hyperM(a, b, x) / coef
 
 # ----
 # plot

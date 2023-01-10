@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.hypergeometric import P
+from ..functions.special import P
 
 m = 5
 n = 50
@@ -10,7 +10,7 @@ r_start = 1
 r_end = 10
 
 r = np.linspace(r_start, r_end, num=200).reshape([1,-1])
-P_eval = P(m, n, r, method='sums').astype(complex)
+P_eval = laguerreP(m, n, r, method='sums').astype(complex)
 
 r = r.flatten()
 P_eval = P_eval.flatten()

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import derivative
 
-from ..functions.hypergeometric import P
+from ..functions.special import P
 
 m = 3
 n = 2
@@ -10,8 +10,8 @@ n = 2
 x = np.linspace(0, 10, num=200).reshape([1,-1])
 dx = x[0,1] - x[0,0]
 
-F1 = lambda x: P(m, n, 1j*x).astype(complex)
-F2 = lambda x: P(m, n, -1j*x).astype(complex)
+F1 = lambda x: laguerreP(m, n, 1j*x).astype(complex)
+F2 = lambda x: laguerreP(m, n, -1j*x).astype(complex)
 
 # evaluate wronskian numerically
 wron = (F1(x) * derivative(F2, x, dx=dx) \

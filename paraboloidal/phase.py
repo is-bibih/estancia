@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
-from ..functions.paraboloidal import cart2pb
-from ..functions.hypergeometric import pinney_wave
+from ..functions.paraboloidal_coordinates import cart2pb
+from ..functions.special import parabV, parabS, parabW
 
 matplotlib.use("pgf")
 matplotlib.rcParams.update({
@@ -43,8 +43,8 @@ for i in range(len(ms)):
 
     title = r"$\mu = " + str(int(ms[i])) + r"$"
 
-    dist = pinney_wave(n, ms[i], -1j*xi, kind='S') \
-        * pinney_wave(n, ms[i], 1j*eta, kind='S') \
+    dist = parabS(n, ms[i], -1j*xi, ) \
+        * parabS(n, ms[i], 1j*eta, ) \
         * np.exp(1j*ms[i]*phi)
 
     phase = np.angle(dist)

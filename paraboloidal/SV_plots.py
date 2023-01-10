@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from scipy.misc import derivative
 
-from ..functions.hypergeometric import pinney_wave
+from ..functions.special import parabV, parabS, parabW
 
 #matplotlib.use("pgf")
 #matplotlib.rcParams.update({
@@ -17,8 +17,8 @@ n = 2
 m = 0
 
 x = np.linspace(0, 5)
-ys = pinney_wave(n, m, 1j*x, kind='S')
-yv = pinney_wave(n, m, 1j*x, kind='V')
+ys = parabS(n, m, 1j*x, )
+yv = parabV(n, m, 1j*x, )
 
 fig, ax = plt.subplots(1,1)
 fig.set_size_inches(w=3.5, h=3)

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.hypergeometric import pinney_wave
+from ..functions.special import parabV, parabS, parabW
 
 k = 2*np.pi / 633e-9
 k = 1
@@ -17,7 +17,7 @@ z = 2j*k*x
 #z = x
 
 # pinney wave
-V = pinney_wave(n, m, z, kind='V').astype(complex).flatten()
+V = parabV(n, m, z, ).astype(complex).flatten()
 
 # asymptotic behavior
 sign = np.ones(z.shape)

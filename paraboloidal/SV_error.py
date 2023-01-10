@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import derivative
 
-from ..functions.hypergeometric import pinney_wave
+from ..functions.special import parabV, parabS, parabW
 
 n = 4
 m = 5
@@ -16,7 +16,13 @@ def diff_eq(kind, z):
     :returns: difference from zero of function evaluated in differential equation
 
     """
-    func = lambda x: pinney_wave(n, m, x, kind=kind)
+    coordinate_func = (
+        parabS if kind == 'S' else
+        parabV if kind == 'V' else
+        parabW
+    )
+
+    func = lambda x: coordinate_func(n, m, x)
 
     diff_eq_func = lambda x: x * derivative(func, z, n=2) \
         + (m + 1 - 2*1j*k*x) * derivative(func, z, n=1) \

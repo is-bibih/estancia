@@ -10,7 +10,7 @@ matplotlib.rcParams.update({
     'pgf.rcfonts': False,
 })
 
-from ..functions.beams import pinney_wave
+from ..functions.beams import parabV, parabS, parabW
 
 n = 10
 m = 2
@@ -35,8 +35,8 @@ V_expected = V_expected.flatten()
 
 # function
 
-S_asymp = pinney_wave(n, m, 1j*x, kind='S').astype(complex).flatten()
-V_asymp = pinney_wave(n, m, 1j*x, kind='V').astype(complex).flatten()
+S_asymp = parabS(n, m, 1j*x, ).astype(complex).flatten()
+V_asymp = parabV(n, m, 1j*x, ).astype(complex).flatten()
 x = x.flatten()
 
 # plot for S

@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import factorial
 from scipy.misc import derivative
-from ..functions.paraboloidal import cart2pb, pb2cart
-from ..functions.hypergeometric import P, X, L, pinney_wave
+from ..functions.paraboloidal_coordinates import cart2pb, pb2cart
+from ..functions.special import P, X, L, parabV, parabS, parabW
 
 m = 0
 n = 5
@@ -16,9 +16,9 @@ r = np.linspace(r_start, r_end, num=500).reshape([1,-1])
 dr = r[0,1] - r[0,0]
 dr = float(dr)
 
-X_eval = X(m, n, r, no_factorials=True).flatten()
-P_eval = P(m, n, r, method='known_functions').astype(complex).flatten()
-L_eval = L(n, m, r).flatten().flatten()
+X_eval = laguerreX(m, n, r, no_factorials=True).flatten()
+P_eval = laguerreP(m, n, r, method='known_functions').astype(complex).flatten()
+L_eval = laguerreL(n, m, r).flatten().flatten()
 
 r = r.flatten()
 

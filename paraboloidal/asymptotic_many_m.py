@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.hypergeometric import P
+from ..functions.special import P
 
 ms = np.arange(1, 11, 1)
 n = np.arange(1, 51, 5)
@@ -22,7 +22,7 @@ def get_cmap(n, name='hsv'):
 for m in ms:
 
     r = np.linspace(r_start, r_end, num=200).reshape([1,-1])
-    P_eval = [P(m, ni, r, method='sums').astype(complex) for ni in n]
+    P_eval = [laguerreP(m, ni, r, method='sums').astype(complex) for ni in n]
 
     r = r.flatten()
     P_eval = [P_eval_i.flatten() for P_eval_i in P_eval]

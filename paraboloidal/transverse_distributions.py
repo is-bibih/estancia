@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
-from ..functions.paraboloidal import cart2pb
-from ..functions.hypergeometric import pinney_wave
+from ..functions.paraboloidal_coordinates import cart2pb
+from ..functions.special import parabV, parabS, parabW
 
 #matplotlib.use("pgf")
 #matplotlib.rcParams.update({
@@ -69,8 +69,19 @@ for i in range(len(kind1)):
     title = "$" + kind1[i] + r"_\nu^{\mu} (" + first_sign + r"i\xi) " \
         + kind2[i] + r"_\nu^{\mu} (" + second_sign + r"i\eta) $"
 
-    dist = pinney_wave(n, m, sign1[i]*1j*xi, kind=kind1[i]) \
-        * pinney_wave(n, m, sign2[i]*1j*eta, kind=kind2[i]) \
+    xifunc = (
+        parabS if kind1[i] == 'S' else
+        parabV if kind1[i] == 'V' else
+        parabW
+    )
+    etafunc = (
+        parabS if kind2[i] == 'S' else
+        parabV if kind2[i] == 'V' else
+        parabW
+    )
+
+    dist = xifunc(n, m, sign1[i]*1j*xi) \
+        * etafunc(n, m, sign2[i]*1j*eta) \
         * np.exp(1j*m*phi)
 
     I = np.abs(dist)

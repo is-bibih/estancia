@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from ..functions.hypergeometric import X, L
+from ..functions.special import X, L
 from scipy.special import factorial
 import time
 
@@ -11,16 +11,16 @@ n = 8
 m = 2
 
 x = np.linspace(1, xf, num=num).reshape([1, -1])
-yl = L(n, m, x)
+yl = laguerreL(n, m, x)
 
 # truncated sum
 start_badsums = time.time()
-yx, Cmn = X(m, n, x, method='bad sums', return_C=True)
+yx, Cmn = laguerreX(m, n, x, method='bad sums', return_C=True)
 end_badsums = time.time()
 
 # converging sum
 start_sums = time.time()
-yx, Cmn = X(m, n, x, method='sums', return_C=True)
+yx, Cmn = laguerreX(m, n, x, method='sums', return_C=True)
 end_sums = time.time()
 
 N = n + (m+1)/2
