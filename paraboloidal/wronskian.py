@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import derivative
 
-from ..functions.special import P
+from ..functions.special import laguerreP
 
 m = 3
 n = 2

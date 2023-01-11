@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from ..functions.special import X, L
+from ..functions.special import laguerreX, laguerreL
 from scipy.special import factorial
 import time
 

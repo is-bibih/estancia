@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ..functions.beams import parabV, parabS, parabW
-from ..functions.special import besselj, H1, H2
+from ..functions.special import besselj, hankel1, hankel2
 
 n = 4
 m = 2

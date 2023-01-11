@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from os.path import expanduser
 
-from ..functions.special import X
+from ..functions.special import laguerreX
 
-fname = expanduser("~/grive/ifi7/optica/mathematica/datos/laguerreX.csv")
+fname = expanduser("~/grive/inv22/paraboloidal/mathematica/datos/laguerreX.csv")
 datos = np.genfromtxt(fname, delimiter=',')
 
 m = 2

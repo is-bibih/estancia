@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.special import factorial
 from scipy.misc import derivative
 from ..functions.paraboloidal_coordinates import cart2pb, pb2cart
-from ..functions.special import P, X, L, parabV, parabS, parabW
+from ..functions.special import laguerreP, laguerreX, laguerreL, parabV, parabS, parabW
 
 m = 5
 n = 15
@@ -74,7 +74,7 @@ def laguerre_eq(m, n, z, kind='pinney'):
     dx = 1e-4
     return z * derivative(evaluate_U, z, n=2, dx=dx) \
         + (m + 1 - z) * derivative(evaluate_U, z, n=1, dx=dx) \
-        + n * evaluate_hyperU(z)
+        + n * evaluate_U(z)
 
 pin_error = laguerre_eq(m, n, r)
 la1_error = laguerre_eq(m, n, r, kind='laguerre')

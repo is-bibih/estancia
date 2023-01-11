@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.special import P
+from ..functions.special import laguerreP
 
 m = 5
 n = 50

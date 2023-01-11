@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.special import X
+from ..functions.special import laguerreX
 
 x0 = 1
 xf = 10

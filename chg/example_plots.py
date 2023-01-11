@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.special import eval_genlaguerre as L, jv, yv, factorial, poch, gamma
 #from scipy.special import hyp1f1 as M
 #from mpmath import hyp1f1 as M
-from ..functions.special import M, U
+from ..functions.special import hyperM, hyperU, laguerreL
 
-which_function = 'bessel'
+which_function = 'chg'
 
 num = 200
 x = np.linspace(0, 10, num=num)
@@ -37,7 +37,7 @@ elif which_function == 'bessel':
 
 elif which_function == 'neumann':
     legends = ['aproximación con HGC', 'Neumann']
-    M = U
+    M = hyperU
     a = -13
     #x = x/np.abs(a) * 5
     b = 1

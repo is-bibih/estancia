@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.special import factorial
 from scipy.misc import derivative
 from ..functions.paraboloidal_coordinates import cart2pb, pb2cart
-from ..functions.special import P, X, L, parabV, parabS, parabW
+from ..functions.special import laguerreP, laguerreX, laguerreL, parabV, parabS, parabW
 
 m = 0
 n = 5

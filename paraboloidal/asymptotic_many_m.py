@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..functions.special import P
+from ..functions.special import laguerreP
 
 ms = np.arange(1, 11, 1)
 n = np.arange(1, 51, 5)
